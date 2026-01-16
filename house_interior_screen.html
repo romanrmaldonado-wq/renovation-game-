@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>House Interior - Select Task</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+        }
+
+        /* ============= HOUSE INTERIOR SCREEN ============= */
+        #house-interior-screen {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Header */
+        .interior-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.6) 100%);
+            padding: 15px 20px;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-button {
+            background: rgba(255,255,255,0.95);
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            font-size: 22px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .house-title {
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .house-subtitle {
+            color: rgba(255,255,255,0.9);
+            font-size: 14px;
+            margin-top: 2px;
+        }
+
+        /* Scrollable house container */
+        .house-container {
+            position: absolute;
+            top: 70px;
+            left: 0;
+            width: 100%;
+            height: calc(100vh - 70px);
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Wide house image */
+        .house-image-wrapper {
+            position: relative;
+            height: 100%;
+            min-width: 250%; /* Wide enough to scroll */
+            background-image: url('house_interior.jpg');
+            background-size: contain;
+            background-position: center center;
+            background-repeat: no-repeat;
+        }
+
+        /* Clickable hotspots for damaged areas */
+        .hotspot {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            cursor: pointer;
+            animation: pulse 2s ease-in-out infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .hotspot-icon {
+            width: 70px;
+            height: 70px;
+            background: rgba(255, 69, 58, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            box-shadow: 0 8px 25px rgba(255,69,58,0.6);
+            border: 4px solid white;
+            transition: transform 0.2s;
+        }
+
+        .hotspot:active .hotspot-icon {
+            transform: scale(0.9);
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        /* Hotspot positions - adjust based on your image */
+        .hotspot.kitchen-sink {
+            bottom: 30%;
+            left: 55%;
+        }
+
+        .hotspot.bathroom-toilet {
+            bottom: 35%;
+            right: 15%;
+        }
+
+        .hotspot.bedroom-wall {
+            bottom: 40%;
+            left: 15%;
+        }
+
+        /* Task selection popup */
+        .task-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .task-popup.show {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .task-popup-content {
+            background: linear-gradient(135deg, #FFF5E6 0%, #FFE8CC 100%);
+            padding: 35px 25px;
+            border-radius: 25px;
+            text-align: center;
+            max-width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            animation: popupBounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes popupBounce {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .task-icon-large {
+            font-size: 80px;
+            margin-bottom: 15px;
+        }
+
+        .task-title {
+            font-size: 26px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .task-description {
+            font-size: 16px;
+            color: #555;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .task-details {
+            background: rgba(255,255,255,0.8);
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .task-detail-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 8px 0;
+            font-size: 15px;
+        }
+
+        .task-detail-label {
+            color: #666;
+        }
+
+        .task-detail-value {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .task-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .cancel-btn, .start-btn {
+            flex: 1;
+            padding: 16px 30px;
+            border: none;
+            border-radius: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .cancel-btn {
+            background: linear-gradient(135deg, #95A5A6 0%, #7F8C8D 100%);
+            color: white;
+        }
+
+        .start-btn {
+            background: linear-gradient(135deg, #2ECC71 0%, #27AE60 100%);
+            color: white;
+            box-shadow: 0 6px 20px rgba(46,204,113,0.4);
+        }
+
+        .cancel-btn:active, .start-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Instructions tooltip */
+        .instructions {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.85);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 14px;
+            z-index: 500;
+            backdrop-filter: blur(10px);
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateX(-50%) translateY(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- HOUSE INTERIOR SCREEN -->
+    <div id="house-interior-screen">
+        <!-- Header -->
+        <div class="interior-header">
+            <button class="back-button" onclick="goBack()">←</button>
+            <div>
+                <div class="house-title">🏠 House #2</div>
+                <div class="house-subtitle">Select a task to fix</div>
+            </div>
+        </div>
+
+        <!-- Scrollable house container -->
+        <div class="house-container">
+            <div class="house-image-wrapper">
+                <!-- Clickable hotspots for damaged areas -->
+                
+                <!-- Kitchen Sink - Burst Pipe -->
+                <div class="hotspot kitchen-sink" onclick="showTaskPopup('kitchen')">
+                    <div class="hotspot-icon">💧</div>
+                </div>
+
+                <!-- Bathroom Toilet - Broken -->
+                <div class="hotspot bathroom-toilet" onclick="showTaskPopup('bathroom')">
+                    <div class="hotspot-icon">🚽</div>
+                </div>
+
+                <!-- Bedroom Wall - Cracked -->
+                <div class="hotspot bedroom-wall" onclick="showTaskPopup('bedroom')">
+                    <div class="hotspot-icon">🔨</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="instructions">
+            👆 Scroll left & right • Tap damaged areas to start
+        </div>
+    </div>
+
+    <!-- TASK SELECTION POPUP -->
+    <div class="task-popup" id="task-popup">
+        <div class="task-popup-content">
+            <div class="task-icon-large" id="popup-icon">💧</div>
+            <div class="task-title" id="popup-title">Fix the Burst Pipe</div>
+            <div class="task-description" id="popup-description">
+                Water is flooding the kitchen! Match tiles to clear the water and fix the pipe.
+            </div>
+            
+            <div class="task-details">
+                <div class="task-detail-item">
+                    <span class="task-detail-label">🎯 Goal:</span>
+                    <span class="task-detail-value" id="popup-goal">Clear 8 water tiles</span>
+                </div>
+                <div class="task-detail-item">
+                    <span class="task-detail-label">📊 Moves:</span>
+                    <span class="task-detail-value">25</span>
+                </div>
+                <div class="task-detail-item">
+                    <span class="task-detail-label">⭐ Difficulty:</span>
+                    <span class="task-detail-value">Easy</span>
+                </div>
+            </div>
+
+            <div class="task-buttons">
+                <button class="cancel-btn" onclick="closeTaskPopup()">Cancel</button>
+                <button class="start-btn" onclick="startLevel()">START</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Task data
+        const tasks = {
+            kitchen: {
+                icon: '💧',
+                title: 'Fix the Burst Pipe',
+                description: 'Water is flooding the kitchen! Match tiles to clear the water and fix the pipe.',
+                goal: 'Clear 8 water tiles'
+            },
+            bathroom: {
+                icon: '🚽',
+                title: 'Fix the Broken Toilet',
+                description: 'The toilet is overflowing! Match tiles to stop the leak and repair it.',
+                goal: 'Clear 6 water tiles'
+            },
+            bedroom: {
+                icon: '🔨',
+                title: 'Repair the Cracked Wall',
+                description: 'The bedroom wall has cracks! Match tiles to collect tools and fix it.',
+                goal: 'Collect 20 hammers'
+            }
+        };
+
+        let currentTask = null;
+
+        function showTaskPopup(taskType) {
+            currentTask = taskType;
+            const task = tasks[taskType];
+            
+            document.getElementById('popup-icon').textContent = task.icon;
+            document.getElementById('popup-title').textContent = task.title;
+            document.getElementById('popup-description').textContent = task.description;
+            document.getElementById('popup-goal').textContent = task.goal;
+            
+            document.getElementById('task-popup').classList.add('show');
+        }
+
+        function closeTaskPopup() {
+            document.getElementById('task-popup').classList.remove('show');
+            currentTask = null;
+        }
+
+        function startLevel() {
+            // This would navigate to your match-3 game
+            alert(`Starting ${tasks[currentTask].title}!\n\nThis would load the match-3 game screen.`);
+            
+            // In your real implementation:
+            // window.location.href = 'game.html?task=' + currentTask;
+            // OR
+            // Show the game screen and hide this screen
+        }
+
+        function goBack() {
+            // This would go back to the map screen
+            alert('Going back to map!\n\nIn the real game, this would return to the level selection map.');
+            
+            // In your real implementation:
+            // window.location.href = 'index.html';
+        }
+
+        // Auto-hide instructions after 3 seconds
+        setTimeout(() => {
+            const instructions = document.querySelector('.instructions');
+            if (instructions) {
+                instructions.style.transition = 'opacity 0.5s';
+                instructions.style.opacity = '0';
+                setTimeout(() => instructions.remove(), 500);
+            }
+        }, 3000);
+    </script>
+</body>
+</html>
